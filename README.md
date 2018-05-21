@@ -6,3 +6,6 @@ Foram adicionados Do#, Re#, Fa#, Sol#, La#. Algumas frequências também foram a
 ![Tabela de Frequências](src/frequencias.jpg)
 
 Foram escolhidos para os testes, os valores de frequência da 4º Oitava. Para efetivar a mudança foi necessário ajustar a quantidade de bits da variável *Octave*, pois nele são registrados todas as possibilidades de notas escolhidas baseado na escolha dos Switchs. Também foram modificados os leds para acender de acordo com as notas adicionais e posição das notas no teclado.
+
+## Referências
+Código fonte pode ser encontrado [aqui](https://github.com/GRocha1/ProjetoCL2).
