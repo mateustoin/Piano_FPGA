@@ -3,7 +3,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 	// Entradas:
 		input CLOCK_27; // Clock em 27MHz.
 		input CLOCK_50;
-		input [3:0] KEY; 
+		input [3:0] KEY;
 		input [17:0] SW; 
 		input AUD_ADCDAT;
 	
@@ -13,7 +13,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 	// Saidas:
 		output I2C_SCLK, AUD_ADCLRCK, AUD_DACLRCK;
 		output AUD_DACDAT;
-		output [12:0] LEDR;
+		output [12:0] LEDR; // Saída dos leds alterada p/ 12, pois foram adicionadas mais notas
 		output [7:0] LEDG;
 		output reg AUD_BCLK, AUD_XCK;
 		
@@ -24,7 +24,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 		parameter SIN_SAMPLE_DATA = 48;
 		parameter DATA_WIDTH = 16; //16 bits
 		
-		//  Frequencia Notas Musicais:
+		//  Frequencia Notas Musicais baseadas na 4º oitava
 			parameter DO = 264;
 			parameter RE = 297;
 			parameter MI = 350;
@@ -34,7 +34,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 			parameter SI = 495;
 			parameter DO1 = 528;
 			
-		// Frequencia das notas sustenidas:	
+		// Frequencia das notas sustenidas adicionadas entre as notas musicais, baseadas na 4º oitava	
 			parameter DOs = 279;
 			parameter REs = 313;
 			parameter FAs = 373;
@@ -52,7 +52,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 		reg SING;
 		reg [DATA_WIDTH - 1:0] SOUND1, SOUND2, SOUND3;
 		reg [1:0] count2;
-		reg [12:0] Octave, Notas;
+		reg [12:0] Octave, Notas; // Octave e Notas ajustados para suportar mais notas
 		reg [3:0] volume;
 		reg [29:0] contador;
 		reg [29:0] contador1;
@@ -116,13 +116,13 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 	
 	always @(negedge AUD_BCLK or negedge Reset) begin
 		if(!Reset)
-			Octave <= 13'b0000000000000;
+			Octave <= 13'b0000000000000; // Zerando Octave
 		else
 			if(SW[17])begin
 				Octave <= Notas;
 			end
 			else begin
-				if(SW[12:0])
+				if(SW[12:0]) // Ajustado Switch para 13 possibilidades baseado na quantidade de notas
 					Octave <= SW[12:0];
 				else
 					Octave <= 13'b0000000000000;
@@ -134,7 +134,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 			if(SW[16]) begin 
 				case(contador)
 					0: begin
-					   Notas <= 13'b0000000000001; // DO
+					   Notas <= 13'b0000000000001; // Seta nota Dó
 					   if( newCont < 13) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -147,27 +147,27 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					1: begin
-					   Notas <= 13'b0000000000010; // DOs
+					   Notas <= 13'b0000000000010; // Seta nota Dó sustenido
 					   contador = contador + 1;
 					   contador1 = 30'd0;
 					end
 					2: begin
-					   Notas <= 13'b0000000000100; // RE
+					   Notas <= 13'b0000000000100; // // Seta nota Ré
 					   contador = contador + 1;
 					   contador1 = 30'd0;
 					end
 					3: begin
-					   Notas <= 13'b0000000001000; // REs
+					   Notas <= 13'b0000000001000; // Seta nota Ré sustenido
 					   contador = contador + 1;
 					   contador1 = 30'd0;
 					end
 					4: begin
-					   Notas <= 13'b0000000010000; // MI
+					   Notas <= 13'b0000000010000; // Seta nota Mi
 					   contador = contador + 1;
 					   contador1 = 30'd0;
 					end
 					5: begin
-					   Notas <= 13'b0000000100000; // FA
+					   Notas <= 13'b0000000100000; // Seta nota Fa
 					   if(newCont < 3) begin
 						   newCont <= newCont + 1;
 						   #2 Notas <= 13'b0000000000000;
@@ -180,7 +180,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					6: begin
-					   Notas <= 13'b0000001000000; // FAs
+					   Notas <= 13'b0000001000000; // Seta nota Fa sustenido
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -193,7 +193,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					7: begin
-					   Notas <= 13'b0000010000000; // FAs
+					   Notas <= 13'b0000010000000; // Seta nota Sol
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -206,7 +206,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					8: begin
-					   Notas <= 13'b0000100000000; // FAs
+					   Notas <= 13'b0000100000000; // Seta nota Sol sustenido
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -219,7 +219,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					9: begin
-					   Notas <= 13'b0001000000000; // FAs
+					   Notas <= 13'b0001000000000; // Seta nota La
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -232,7 +232,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					10: begin
-					   Notas <= 13'b0010000000000; // FAs
+					   Notas <= 13'b0010000000000; // Seta nota La sustenido
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -245,7 +245,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					11: begin
-					   Notas <= 13'b0100000000000; // FAs
+					   Notas <= 13'b0100000000000; // Seta nota Si
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -258,7 +258,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 					   contador1 = 30'd0;
 					end
 					12: begin
-					   Notas <= 13'b1000000000000; // FAs
+					   Notas <= 13'b1000000000000; // Seta nota Dó
 					   if( newCont < 3) begin
 							newCont <= newCont + 1;
 							#2 Notas <= 13'b0000000000000;
@@ -709,6 +709,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 	end
 	end
 	
+	// Atualiza count12 de acordo com o SW acionado, p/ modificar Sound
 	always @(posedge AUD_BCLK or negedge Reset) begin
 		if(!Reset)
 			count12 = 12'h000;
@@ -796,6 +797,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 		end
 	end
 	
+	// Atualiza LED quando SW referente a alguma nota musical é acionado
 	assign LEDR = Octave;
 	
 	always @(negedge AUD_BCLK or negedge Reset) begin
@@ -815,6 +817,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 		end
 	end
 	
+	// Atualiza count2 quando botão do volume(Key[3]) é acionado
 	always @(negedge KEY[3] or negedge Reset) begin
 		if(!Reset)
 			count2 <= 2'b00;
@@ -833,6 +836,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 						(count2 == 2'd2)?SOUND2[~SEL_Count]:
 						(count2 == 2'd3)?SOUND3[~SEL_Count]:1'b0;
 						
+	// Atualiza 'volume' indicador do Som quando Key[3] é modificado
 	always @(count2) begin
 		case(count2)
 			0: volume <= 4'b0000;
@@ -843,6 +847,7 @@ module piano(CLOCK_50, CLOCK_27, KEY, SW, I2C_SDAT, I2C_SCLK, AUD_ADCDAT, AUD_DA
 		endcase
 	end
 
+	// Atualiza led referente ao volume do som
 	assign LEDG[3:0] = volume;
 	
 endmodule
